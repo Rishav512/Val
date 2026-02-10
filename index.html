@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>A Special Question</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #ff4d6d;
+      --primary-dark: #c9184a;
+      --secondary: #fff0f3;
+      --glass: rgba(255, 255, 255, 0.85);
+      --text: #4a0e0e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #ffccd5 0%, #fff0f3 100%);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      perspective: 1000px;
+    }
+
+    /* Floating Heart Background */
+    .bg-hearts {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glassmorphic Card (MUI Surface) */
+    .card {
+      position: relative;
+      z-index: 10;
+      width: min(500px, 90vw);
+      padding: 48px 32px;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 32px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(255, 77, 109, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .art-container {
+      font-size: 80px;
+      margin-bottom: 24px;
+      display: inline-block;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0); }
+      50% { transform: translateY(-15px) rotate(5deg); }
+    }
+
+    h1 {
+      font-family: 'Dancing Script', cursive;
+      color: var(--text);
+      font-size: clamp(32px, 5vw, 48px);
+      margin: 0 0 32px;
+      line-height: 1.2;
+    }
+
+    .button-zone {
+      position: relative;
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* MUI-style Buttons */
+    .btn {
+      padding: 16px 40px;
+      font-size: 18px;
+      font-weight: 700;
+      border-radius: 16px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #yesBtn {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 8px 20px rgba(255, 77, 109, 0.4);
+      z-index: 100;
+    }
+
+    #yesBtn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    #noBtn {
+      background: #f8f9fa;
+      color: #6c757d;
+      border: 2px solid #e9ecef;
+      position: absolute; /* Needed for movement */
+    }
+
+    .hint {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #ff8fa3;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+
+    /* Success State */
+    #result {
+      display: none;
+      animation: scaleUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes scaleUp {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .success-text {
+      font-family: 'Dancing Script', cursive;
+      font-size: 56px;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+
+    .gif-frame {
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      max-width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-hearts" id="bgHearts"></div>
+
+  <main class="card" id="mainCard">
+    <div id="content">
+      <div class="art-container">🧸</div>
+      <h1>Jullu Dash, <br> will you be my valentine?</h1>
+
+      <div class="button-zone" id="zone">
+        <button id="yesBtn" class="btn">Yes!</button>
+        <button id="noBtn" class="btn">No</button>
+      </div>
+      
+      <p class="hint">The "No" button is just a suggestion... 😉</p>
+    </div>
+
+    <div id="result">
+      <div class="success-text">Forever & Always! ❤️</div>
+      <div class="gif-frame">
+        <img src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHp1MGdzcDR2dzVjdzJqY3R3eGd5eXpxeXpxeXpxeXpxeXpxeXpxJmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/KztT2c4u8mYYUiCi dV/giphy.gif" alt="Cute Bear Hug" style="width: 100%;">
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const zone = document.getElementById('zone');
+    const content = document.getElementById('content');
+    const result = document.getElementById('result');
+    const card = document.getElementById('mainCard');
+
+    let scale = 1;
+
+    // 1. Create Floating Hearts Background
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.innerHTML = '❤️';
+      heart.style.position = 'absolute';
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.top = '105vh';
+      heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
+      heart.style.opacity = Math.random();
+      heart.style.transition = `transform ${Math.random() * 3 + 2}s linear, opacity 2s`;
+      
+      document.getElementById('bgHearts').appendChild(heart);
+
+      setTimeout(() => {
+        heart.style.transform = `translateY(-110vh) translateX(${Math.random() * 100 - 50}px)`;
+        setTimeout(() => heart.remove(), 5000);
+      }, 100);
+    }
+    setInterval(createHeart, 400);
+
+    // 2. No Button Runaway Logic
+    function moveNo() {
+      const x = Math.random() * (zone.offsetWidth - noBtn.offsetWidth);
+      const y = Math.random() * (zone.offsetHeight - noBtn.offsetHeight);
+      
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top = `${y}px`;
+      
+      // Grow the Yes button
+      scale += 0.15;
+      yesBtn.style.transform = `scale(${scale})`;
+      
+      // Add a slight shake to the card
+      card.style.transform = `rotate(${Math.random() * 2 - 1}deg)`;
+    }
+
+    noBtn.addEventListener('mouseover', moveNo);
+    noBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      moveNo();
+    });
+
+    // 3. Yes Button Action
+    yesBtn.addEventListener('click', () => {
+      content.style.display = 'none';
+      result.style.display = 'block';
+      card.style.transform = 'scale(1.05)';
+      
+      // Confetti Explosion
+      const duration = 3 * 1000;
+      const end = Date.now() + duration;
+
+      (function frame() {
+        confetti({
+          particleCount: 5,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ['#ff4d6d', '#ff8fa3', '#ffffff']
+        });
+        confetti({
+          particleCount: 5,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ['#ff4d6d', '#ff8fa3', '#ffffff']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      }());
+    });
+  </script>
+</body>
+</html>
